@@ -1,0 +1,132 @@
+import numpy as np
+
+U = np.array([[1, 1], [1, -1]]) / np.sqrt(2)
+
+# Creating a single qubit quantum algorithm where I accept user input
+# for an arbitrary qubit state, apply the Hadamard gate and then
+# take measurement samples.
+
+ket0 = np.array([1, 0], dtype=complex)
+ket1 = np.array([0, 1], dtype=complex)
+
+
+def getqubit():
+    # Gets user input for the probability amplitudes of states |0> and |1>.
+    amp0 = complex(input("Enter a probability amplitude for state 0: "))
+    amp1 = complex(input("Enter a probability amplitude for state 1: "))
+
+    # Returns the state vector.
+    return amp0 * ket0 + amp1 * ket1
+
+
+def normalize(state):
+    scale_factor = np.sqrt(abs(state[0])**2 + abs(state[1])**2)
+
+    new_probamp1 = state[0] / scale_factor
+    new_probamp2 = state[1] / scale_factor
+
+    print(np.array([new_probamp1, new_probamp2]))
+
+    # Normalizes the qubit so that the squared magnitudes
+    # of the probability amplitudes add up to 1.
+    return np.array([new_probamp1, new_probamp2])
+
+
+def applygate(state):
+    # Takes an arbitrary quantum state as an argument,
+    # applies the Hadamard gate to the state and returns the output.
+    return U @ state
+
+
+def samplermeasure(state, num_meas):
+    # Calculates the probability of measuring the qubit
+    # in state |0> or |1> using the squared magnitude
+    # of the probability amplitudes.
+    prob_0 = abs(state[0]) ** 2
+    prob_1 = abs(state[1]) ** 2
+
+    print(
+        f"Probability for state 0 is {prob_0}, "
+        f"and probability for state 1 is {prob_1}"
+    )
+
+    # Simulates repeated measurements using the calculated probabilities.
+    results = np.random.choice(
+        [0, 1],
+        p=[prob_0, prob_1],
+        size=num_meas
+    )
+
+    return results
+    # Returns the NumPy array containing the measurement outcomes.
+
+
+def counter0(matrix):
+    # Counts the number of measurement results equal to 0.
+    zero_counter = 0
+
+    for element in matrix:
+        if element == 0:
+            zero_counter += 1
+
+    return zero_counter
+
+
+def counter1(matrix):
+    # Counts the number of measurement results equal to 1.
+    one_counter = 0
+
+    for element in matrix:
+        if element == 1:
+            one_counter += 1
+
+    return one_counter
+
+
+def quantum_algorithm():
+    # The actual algorithm piecing together the earlier functions.
+
+    state = getqubit()
+    nstate = normalize(state)
+
+    # Apply the Hadamard gate to the normalized quantum state.
+    new_state = applygate(nstate)
+    print(new_state)
+
+    # Run the measurement sampler for 100 shots.
+    outcome = samplermeasure(new_state, 100)
+
+    return outcome
+    # Returns the array of measurement outcomes.
+
+
+run = quantum_algorithm()
+
+print(run)
+
+times0 = counter0(run)
+times1 = counter1(run)
+
+print(
+    f"Number of times the measurement returned 1 is {times1} "
+    f"and 0 is {times0}"
+)
+
+
+# Outputs the measurement results of the quantum algorithm.
+
+
+"""
+More mathematically, this program accepts an arbitrary single-qubit
+state from the user, normalizes the state by scaling the vector using
+its norm, and then applies a quantum gate (in this case, the Hadamard
+gate H).
+
+The resulting state is then measured repeatedly. The program calculates
+the probability of measuring the qubit in each computational basis state
+using the squared magnitude of the probability amplitudes.
+
+np.random.choice() is then used to simulate the measurement shots,
+and two counter functions count the number of 0 and 1 outcomes.
+"""
+
